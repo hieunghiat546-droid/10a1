@@ -1,1 +1,251 @@
 # 10a1
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trang Lớp - 10A1 (Full)</title>
+  <meta name="theme-color" content="#ff5c8a" />
+  <style>
+    :root{--accent:#ff5c8a;--bg:#f7f7fb;--card:#ffffff;--muted:#666}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,#ffd1dc10 0,#ffd1dc);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo-img{width:72px;height:72px;border-radius:12px;object-fit:cover;border:3px solid var(--accent);background:#fff}
+    h1{font-size:18px;margin:0}
+    nav{display:flex;gap:8px}
+    button{background:none;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .container{max-width:1200px;margin:18px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:1000px){.grid{grid-template-columns:300px 1fr}}
+    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(11,7,21,0.05)}
+    .muted{color:var(--muted);font-size:13px}
+    .ann-list{display:flex;flex-direction:column;gap:8px}
+    .ann{padding:10px;border-radius:8px;background:#fff7fb;border:1px solid #ffe0ec}
+    input[type=text],textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e6ee;margin-top:6px}
+    .small{font-size:13px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f1f1f6;text-align:left}
+    .actions{display:flex;gap:8px}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .ghost{background:transparent;border:1px solid #eee;color:#333}
+    footer{padding:14px;text-align:center;color:var(--muted);font-size:13px}
+    .flex{display:flex;gap:8px;align-items:center}
+    .uploader{display:flex;gap:8px;align-items:center}
+    .gallery img{width:120px;height:80px;object-fit:cover;border-radius:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img id="logoImg" src="10a1.jpg" alt="Logo lớp" class="logo-img">
+      <div>
+        <h1 id="classTitle">Lớp 10A1 — Tri thức dẫn lối</h1>
+        <div class="muted">Niên khóa 2025–2026 · Quản trị viên: Giáo viên chủ nhiệm</div>
+      </div>
+    </div>
+    <nav>
+      <button id="uploadLogoBtn" title="Đổi logo">🖼 Đổi logo</button>
+      <button id="toggleDark" title="Bật/tắt chế độ tối">🌙</button>
+      <button id="printBtn" title="In trang lớp">🖨 In</button>
+      <button id="resetBtn" title="Xóa dữ liệu local">🧹 Reset</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <aside>
+        <section class="card">
+          <h3>Thông báo nhanh</h3>
+          <div class="ann-list" id="annList"></div>
+          <hr style="margin:10px 0">
+          <input id="annTitle" placeholder="Tiêu đề" />
+          <textarea id="annContent" rows="3" placeholder="Nội dung thông báo"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="addAnn">Thêm thông báo</button>
+            <button class="ghost" id="clearAnns">Xóa tất cả</button>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h3>Danh sách lớp</h3>
+          <div class="muted small">Thêm/sửa nhanh, xuất CSV</div>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+            <input id="stuName" placeholder="Họ tên" />
+            <div class="flex"><input id="stuRoll" placeholder="Số báo danh" style="width:120px" /><input id="stuClass" placeholder="Lớp" style="width:120px" /></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="addStu">Thêm</button>
+              <button class="ghost" id="exportCSV">Xuất CSV</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;max-height:240px;overflow:auto">
+            <table id="stuTable"><thead><tr><th>#</th><th>Họ tên</th><th>SBĐ</th><th>Lớp</th><th></th></tr></thead><tbody></tbody></table>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h3>Bảng điểm</h3>
+          <div class="muted small">Chọn học sinh để thêm điểm từng môn</div>
+          <select id="gradeStudent"><option value="">-- Chọn học sinh --</option></select>
+          <div class="flex" style="margin-top:8px"><input id="gradeSubject" placeholder="Môn" /><input id="gradeScore" placeholder="Điểm" style="width:120px" /></div>
+          <div style="margin-top:8px"><button class="btn" id="addGrade">Thêm điểm</button></div>
+          <div style="margin-top:12px;max-height:160px;overflow:auto"><table id="gradeTable"><thead><tr><th>Học sinh</th><th>Môn</th><th>Điểm</th><th></th></tr></thead><tbody></tbody></table></div>
+          <div style="margin-top:8px"><button class="ghost" id="computeRank">Tính trung bình & Xếp hạng</button></div>
+          <div style="margin-top:8px"><table id="rankTable"><thead><tr><th>Học sinh</th><th>TB</th><th>Xếp hạng</th></tr></thead><tbody></tbody></table></div>
+        </section>
+
+      </aside>
+
+      <section>
+        <div class="card">
+          <h2>Lịch học</h2>
+          <div class="muted small">Nhập ngày/giờ - môn - ghi chú</div>
+          <div style="display:flex;gap:8px;margin-top:8px"><input id="schDate" placeholder="YYYY-MM-DD" /><input id="schTime" placeholder="Tiết" /><input id="schTopic" placeholder="Môn / Chủ đề" /><button class="btn" id="addSch">Thêm</button></div>
+          <div style="margin-top:12px"><table id="schTable"><thead><tr><th>Ngày</th><th>Tiết</th><th>Chủ đề</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2>Bài tập & Deadline</h2>
+          <div class="muted small">Ghi bài tập theo môn, đặt hạn nộp</div>
+          <div style="display:flex;gap:8px;margin-top:8px"><input id="taskSubject" placeholder="Môn" /><input id="taskTitle" placeholder="Tiêu đề" /><input id="taskDue" placeholder="Hạn (YYYY-MM-DD)" /><button class="btn" id="addTask">Thêm</button></div>
+          <div style="margin-top:12px"><table id="taskTable"><thead><tr><th>Môn</th><th>Tiêu đề</th><th>Hạn</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2>Thư viện tài liệu</h2>
+          <div class="muted small">Thêm link tài liệu hoặc upload file (lưu local)</div>
+          <div style="display:flex;gap:8px;margin-top:8px"><input id="docTitle" placeholder="Tiêu đề" /><input id="docUrl" placeholder="Link (hoặc bỏ trống để upload)" /><input id="docFile" type="file" /></div>
+          <div style="margin-top:8px"><button class="btn" id="addDoc">Thêm tài liệu</button></div>
+          <div style="margin-top:12px"><ul id="docList"></ul></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2>Gallery kỷ niệm</h2>
+          <div class="muted small">Upload ảnh để hiển thị (lưu local)</div>
+          <div class="uploader" style="margin-top:8px"><input id="galleryFile" type="file" accept="image/*" multiple /><button class="btn" id="addGallery">Upload</button></div>
+          <div class="gallery" id="gallery" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <footer>.Lớp 10A1 - 2025_2026.
+    Thiết kế bởi Trương Hiếu Nghĩa
+  </footer>
+
+  <input id="logoInput" type="file" accept="image/*" style="display:none">
+
+  <script>
+    // --- Helpers & state ---
+    const $ = id=>document.getElementById(id)
+    const storageKey = 'class_full_v1'
+    const defaultState = {
+      title: 'Lớp 10A1 — Tri thức dẫn lối',
+      logo: '10a1.jpg',
+      announcements: [],
+      students: [],
+      schedule: [],
+      tasks: [],
+      docs: [],
+      gallery: [],
+      grades: [] // {studentId, subject, score}
+    }
+    let state = JSON.parse(localStorage.getItem(storageKey) || 'null') || defaultState
+
+    function save(){ localStorage.setItem(storageKey, JSON.stringify(state)) }
+
+    // --- Render ---
+    function renderAll(){
+      $('classTitle').textContent = state.title
+      $('logoImg').src = state.logo
+      renderAnns(); renderStudents(); renderGradeStudentSelect(); renderSchedule(); renderTasks(); renderDocs(); renderGallery(); renderGrades(); renderRanks()
+    }
+
+    function renderAnns(){ const el=$('annList'); el.innerHTML=''; if(!state.announcements.length) el.innerHTML='<div class="muted">Chưa có thông báo nào — thêm đi!</div>'
+      state.announcements.slice().reverse().forEach((a,i)=>{ const div=document.createElement('div'); div.className='ann'; div.innerHTML=`<strong>${a.title}</strong><div class="muted small">${new Date(a.t).toLocaleString()}</div><p style="margin:8px 0">${a.content}</p><div style="text-align:right"><button class=\"ghost\" data-i=${i}>Xóa</button></div>`; el.appendChild(div) })
+      el.querySelectorAll('button[data-i]').forEach(b=>b.onclick=e=>{ state.announcements.splice(state.announcements.length-1-parseInt(e.target.dataset.i),1); save(); renderAnns() }) }
+
+    function renderStudents(){ const tbody=document.querySelector('#stuTable tbody'); tbody.innerHTML=''; state.students.forEach((s,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${s.name}</td><td>${s.roll||''}</td><td>${s.cl||''}</td><td><div class="actions"><button class="ghost" data-i=${i} data-act=edit>✏️</button><button class="ghost" data-i=${i} data-act=del>🗑</button></div></td>`; tbody.appendChild(tr) })
+      tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ const i=parseInt(e.target.dataset.i); const act=e.target.dataset.act; if(act==='del'){ if(confirm('Xóa học sinh?')){ state.students.splice(i,1); // remove grades too
+            state.grades = state.grades.filter(g=>g.studentId!==state.students[i]?.id)
+            save(); renderAll(); }
+        } else if(act==='edit'){ const name=prompt('Sửa tên', state.students[i].name); if(name!==null){ state.students[i].name=name; save(); renderStudents(); renderGradeStudentSelect(); } } }) }
+
+    function renderGradeStudentSelect(){ const sel=$('gradeStudent'); sel.innerHTML='<option value="">-- Chọn học sinh --</option>'; state.students.forEach(s=>sel.innerHTML+=`<option value="${s.id}">${s.name}</option>`) }
+
+    function renderSchedule(){ const tbody=document.querySelector('#schTable tbody'); tbody.innerHTML=''; state.schedule.forEach((s,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${s.date}</td><td>${s.time}</td><td>${s.topic}</td><td><button class=\"ghost\" data-i=${i}>Xóa</button></td>`; tbody.appendChild(tr) }); tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.schedule.splice(parseInt(e.target.dataset.i),1); save(); renderSchedule() }) }
+
+    function renderTasks(){ const tbody=document.querySelector('#taskTable tbody'); tbody.innerHTML=''; state.tasks.forEach((t,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${t.subject}</td><td>${t.title}</td><td>${t.due}</td><td><button class=\"ghost\" data-i=${i}>Xóa</button></td>`; tbody.appendChild(tr) }); tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.tasks.splice(parseInt(e.target.dataset.i),1); save(); renderTasks() }) }
+
+    function renderDocs(){ const el=$('docList'); el.innerHTML=''; if(!state.docs.length) el.innerHTML='<li class="muted">Chưa có tài liệu</li>'
+      state.docs.forEach((d,i)=>{ const li=document.createElement('li'); if(d.url){ li.innerHTML=`<strong>${d.title}</strong> — <a href="${d.url}" target="_blank">Mở link</a> <button class=\"ghost\" data-i=${i}>Xóa</button>` } else { li.innerHTML=`<strong>${d.title}</strong> — <a href='${d.data}' target='_blank' download='${d.title}'>Tải file</a> <button class=\"ghost\" data-i=${i}>Xóa</button>` } el.appendChild(li) })
+      el.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.docs.splice(parseInt(e.target.dataset.i),1); save(); renderDocs() }) }
+
+    function renderGallery(){ const el=$('gallery'); el.innerHTML=''; if(!state.gallery.length) el.innerHTML='<div class="muted">Chưa có ảnh</div>'
+      state.gallery.forEach((d,i)=>{ const img=document.createElement('img'); img.src=d; img.title='Ảnh kỷ niệm'; img.onclick=()=>window.open(d,'_blank'); el.appendChild(img) }) }
+
+    function renderGrades(){ const tbody=document.querySelector('#gradeTable tbody'); tbody.innerHTML=''; state.grades.forEach((g,i)=>{ const student = state.students.find(s=>s.id===g.studentId); const tr=document.createElement('tr'); tr.innerHTML=`<td>${student?student.name:'(không tồn tại)'}</td><td>${g.subject}</td><td>${g.score}</td><td><button class=\"ghost\" data-i=${i}>Xóa</button></td>`; tbody.appendChild(tr) })
+      tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.grades.splice(parseInt(e.target.dataset.i),1); save(); renderGrades(); renderRanks() }) }
+
+    function renderRanks(){ const tbody=document.querySelector('#rankTable tbody'); tbody.innerHTML=''; if(!state.students.length){ tbody.innerHTML='<tr><td colspan=3 class="muted">Chưa có học sinh</td></tr>'; return }
+      const map = {}
+      state.students.forEach(s=>map[s.id]={name:s.name,total:0,count:0,avg:0})
+      state.grades.forEach(g=>{ if(map[g.studentId]){ map[g.studentId].total+=parseFloat(g.score); map[g.studentId].count+=1 } })
+      const arr = Object.values(map).map(m=>({name:m.name,avg: m.count? (m.total/m.count):0}))
+      arr.sort((a,b)=>b.avg-a.avg)
+      arr.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.name}</td><td>${r.avg.toFixed(2)}</td><td>${i+1}</td>`; tbody.appendChild(tr) }) }
+
+    // --- Actions ---
+    $('addAnn').onclick=()=>{ const title=$('annTitle').value.trim()||'Không có tiêu đề'; const content=$('annContent').value.trim(); state.announcements.push({title,content,t:Date.now()}); $('annTitle').value=''; $('annContent').value=''; save(); renderAnns() }
+    $('clearAnns').onclick=()=>{ if(confirm('Xóa tất cả thông báo?')){ state.announcements=[]; save(); renderAnns() } }
+
+    function newid(prefix='id'){ return prefix+Math.random().toString(36).slice(2,9) }
+
+    $('addStu').onclick=()=>{ const name=$('stuName').value.trim(); const roll=$('stuRoll').value.trim(); const cl=$('stuClass').value.trim(); if(!name){ alert('Nhập tên đi bạn'); return } const id=newid('s_'); state.students.push({id,name,roll,cl}); $('stuName').value=''; $('stuRoll').value=''; $('stuClass').value=''; save(); renderStudents(); renderGradeStudentSelect(); }
+
+    $('exportCSV').onclick=()=>{ if(!state.students.length){ alert('Chưa có học sinh'); return } const rows=[['STT','Ho Ten','So Bao Dan','Lop']]; state.students.forEach((s,i)=>rows.push([i+1,s.name,s.roll||'',s.cl||''])); const csv = rows.map(r=>r.map(c=>`"${(''+(c||'')).replace(/"/g,'""')}"`).join(',')).join('\n'); const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='danh_sach_lop.csv'; a.click(); URL.revokeObjectURL(url) }
+
+    $('addSch').onclick=()=>{ const date=$('schDate').value.trim(); const time=$('schTime').value.trim(); const topic=$('schTopic').value.trim(); if(!date||!time||!topic){ alert('Nhập đủ ngày-tiết-chủ đề'); return } state.schedule.push({date,time,topic}); $('schDate').value=''; $('schTime').value=''; $('schTopic').value=''; save(); renderSchedule() }
+
+    $('addTask').onclick=()=>{ const subject=$('taskSubject').value.trim(); const title=$('taskTitle').value.trim(); const due=$('taskDue').value.trim(); if(!subject||!title||!due){ alert('Nhập đủ thông tin'); return } state.tasks.push({subject,title,due}); $('taskSubject').value=''; $('taskTitle').value=''; $('taskDue').value=''; save(); renderTasks() }
+
+    $('addDoc').onclick=async()=>{ const title=$('docTitle').value.trim()||'Tài liệu'; const url=$('docUrl').value.trim(); const file=$('docFile').files[0]; if(!url && !file){ alert('Bỏ link hoặc chọn file để lưu'); return }
+      if(url){ state.docs.push({title,url}); } else { const data = await fileToDataUrl(file); state.docs.push({title,data}); }
+      $('docTitle').value=''; $('docUrl').value=''; $('docFile').value=''; save(); renderDocs(); }
+
+    $('addGallery').onclick=async()=>{ const files=$('galleryFile').files; if(!files.length){ alert('Chọn ảnh để upload'); return } for(const f of files){ const data=await fileToDataUrl(f); state.gallery.push(data); } $('galleryFile').value=''; save(); renderGallery(); }
+
+    async function fileToDataUrl(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(); r.readAsDataURL(file); }) }
+
+    $('addGrade').onclick=()=>{ const sid=$('gradeStudent').value; const subject=$('gradeSubject').value.trim(); const score=parseFloat($('gradeScore').value); if(!sid||!subject||isNaN(score)){ alert('Chọn học sinh, môn và nhập điểm hợp lệ'); return } state.grades.push({studentId:sid,subject,score}); $('gradeSubject').value=''; $('gradeScore').value=''; save(); renderGrades(); }
+
+    $('computeRank').onclick=()=>{ renderRanks(); alert('Đã tính xong (dựa trên điểm đã nhập)') }
+
+    // logo change
+    $('uploadLogoBtn').onclick=()=>$('logoInput').click()
+    $('logoInput').addEventListener('change', async(e)=>{ const f=e.target.files[0]; if(!f) return; const data=await fileToDataUrl(f); state.logo=data; save(); $('logoImg').src=data })
+
+    // gallery image click handled in render
+
+    // misc
+    $('printBtn').onclick=()=>window.print()
+    $('resetBtn').onclick=()=>{ if(confirm('Xóa hết dữ liệu cục bộ?')){ localStorage.removeItem(storageKey); state = JSON.parse(JSON.stringify(defaultState)); save(); renderAll(); } }
+
+    // dark mode simple
+    $('toggleDark').onclick=()=>{ document.body.style.background = document.body.style.background? '': '#071024'; document.body.style.color = document.body.style.color==='white'?'#111':'#fff' }
+
+    // save before close
+    window.addEventListener('beforeunload', save)
+
+    // init
+    renderAll()
+
+    // --- PWA hint: register a lightweight service worker if supported ---
+    if('serviceWorker' in navigator){ try{ const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>clients.claim());self.addEventListener('fetch',e=>{});`; const blob = new Blob([swCode],{type:'application/javascript'}); const url = URL.createObjectURL(blob); navigator.serviceWorker.register(url).catch(()=>{}); }catch(e){}
+    }
+
+  </script>
+</body>
+</html>
