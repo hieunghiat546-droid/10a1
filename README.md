@@ -1,14 +1,16 @@
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Trang Lớp - 10A1 (Full)</title>
+  <title>10A1</title>
   <meta name="theme-color" content="#ff5c8a" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    :root{--accent:#ff5c8a;--bg:#f7f7fb;--card:#ffffff;--muted:#666}
+    :root{--accent:#24551d;--bg:#ff7b0086;--card:#c600006a;--muted:#666}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;background:var(--bg);color:#111}
-    header{background:linear-gradient(90deg,#ffd1dc10 0,#ffd1dc);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    header{background:linear-gradient(90deg,#ffd1dc10 0,#670000);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{display:flex;gap:12px;align-items:center}
     .logo-img{width:72px;height:72px;border-radius:12px;object-fit:cover;border:3px solid var(--accent);background:#fff}
     h1{font-size:18px;margin:0}
@@ -32,15 +34,37 @@
     .flex{display:flex;gap:8px;align-items:center}
     .uploader{display:flex;gap:8px;align-items:center}
     .gallery img{width:120px;height:80px;object-fit:cover;border-radius:8px}
+
+    /* Hiệu ứng */
+    @keyframes fadeZoom {
+      from { opacity:0; transform:scale(0.9); }
+      to { opacity:1; transform:scale(1); }
+    }
+    .fade-zoom { animation: fadeZoom 0.8s ease forwards; }
+
+    @keyframes fadeOut {
+      from { opacity:1; }
+      to { opacity:0; visibility:hidden; }
+    }
+    .fade-out { animation: fadeOut 0.5s ease forwards; }
   </style>
 </head>
 <body>
+  <!-- Màn hình đăng nhập -->
+  <div id="loginScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#f1f1f1;">
+    <h2>Đăng nhập trang lớp</h2>
+    <input id="username" placeholder="Tài khoản" style="margin:5px;padding:8px;">
+    <input id="password" type="password" placeholder="Mật khẩu" style="margin:5px;padding:8px;">
+    <button onclick="login()" style="padding:8px 12px;margin-top:10px;">Đăng nhập</button>
+    <p id="loginMsg" style="color:red;"></p>
+  </div>
+
   <header>
     <div class="brand">
       <img id="logoImg" src="10a1.jpg" alt="Logo lớp" class="logo-img">
       <div>
         <h1 id="classTitle">Lớp 10A1 — Tri thức dẫn lối</h1>
-        <div class="muted">Niên khóa 2025–2026 · Quản trị viên: Giáo viên chủ nhiệm</div>
+        <div class="muted">Niên khóa 2025–2026 · Quản trị viên: Cao Thị Huỳnh Hoa</div>
       </div>
     </div>
     <nav>
@@ -48,6 +72,7 @@
       <button id="toggleDark" title="Bật/tắt chế độ tối">🌙</button>
       <button id="printBtn" title="In trang lớp">🖨 In</button>
       <button id="resetBtn" title="Xóa dữ liệu local">🧹 Reset</button>
+      <button onclick="logout()" id="logoutBtn">🚪 Đăng xuất</button>
     </nav>
   </header>
 
@@ -68,18 +93,12 @@
 
         <section class="card" style="margin-top:12px">
           <h3>Danh sách lớp</h3>
-          <div class="muted small">Thêm/sửa nhanh, xuất CSV</div>
-          <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
-            <input id="stuName" placeholder="Họ tên" />
-            <div class="flex"><input id="stuRoll" placeholder="Số báo danh" style="width:120px" /><input id="stuClass" placeholder="Lớp" style="width:120px" /></div>
-            <div style="display:flex;gap:8px">
-              <button class="btn" id="addStu">Thêm</button>
-              <button class="ghost" id="exportCSV">Xuất CSV</button>
-            </div>
-          </div>
+          <div class="muted small">Upload file Excel để load danh sách</div>
+          <input type="file" id="excelInput" accept=".xls,.xlsx" />
           <div style="margin-top:12px;max-height:240px;overflow:auto">
-            <table id="stuTable"><thead><tr><th>#</th><th>Họ tên</th><th>SBĐ</th><th>Lớp</th><th></th></tr></thead><tbody></tbody></table>
+            <table id="stuTable"><thead></thead><tbody></tbody></table>
           </div>
+          <div style="margin-top:8px"><button class="ghost" id="exportCSV">Xuất CSV</button></div>
         </section>
 
         <section class="card" style="margin-top:12px">
@@ -92,7 +111,6 @@
           <div style="margin-top:8px"><button class="ghost" id="computeRank">Tính trung bình & Xếp hạng</button></div>
           <div style="margin-top:8px"><table id="rankTable"><thead><tr><th>Học sinh</th><th>TB</th><th>Xếp hạng</th></tr></thead><tbody></tbody></table></div>
         </section>
-
       </aside>
 
       <section>
@@ -124,126 +142,121 @@
           <div class="uploader" style="margin-top:8px"><input id="galleryFile" type="file" accept="image/*" multiple /><button class="btn" id="addGallery">Upload</button></div>
           <div class="gallery" id="gallery" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px"></div>
         </div>
-
       </section>
     </div>
   </main>
 
-  <footer>.Lớp 10A1 - 2025_2026.
-    Thiết kế bởi Trương Hiếu Nghĩa
-  </footer>
-
+  <footer>Lớp 10A1 - 2025_2026. Thiết kế bởi Trương Hiếu Nghĩa</footer>
   <input id="logoInput" type="file" accept="image/*" style="display:none">
 
   <script>
-    // --- Helpers & state ---
     const $ = id=>document.getElementById(id)
-    const storageKey = 'class_full_v1'
-    const defaultState = {
-      title: 'Lớp 10A1 — Tri thức dẫn lối',
-      logo: '10a1.jpg',
-      announcements: [],
-      students: [],
-      schedule: [],
-      tasks: [],
-      docs: [],
-      gallery: [],
-      grades: [] // {studentId, subject, score}
-    }
-    let state = JSON.parse(localStorage.getItem(storageKey) || 'null') || defaultState
 
-    function save(){ localStorage.setItem(storageKey, JSON.stringify(state)) }
+    // --- Login ---
+    const ACCOUNTS = [
+      {user:"admin", pass:"123456", role:"gv"},
+      {user:"hs1", pass:"111111", role:"hs"},
+      {user:"hs2", pass:"222222", role:"hs"}
+    ]
 
-    // --- Render ---
-    function renderAll(){
-      $('classTitle').textContent = state.title
-      $('logoImg').src = state.logo
-      renderAnns(); renderStudents(); renderGradeStudentSelect(); renderSchedule(); renderTasks(); renderDocs(); renderGallery(); renderGrades(); renderRanks()
-    }
-
-    function renderAnns(){ const el=$('annList'); el.innerHTML=''; if(!state.announcements.length) el.innerHTML='<div class="muted">Chưa có thông báo nào — thêm đi!</div>'
-      state.announcements.slice().reverse().forEach((a,i)=>{ const div=document.createElement('div'); div.className='ann'; div.innerHTML=`<strong>${a.title}</strong><div class="muted small">${new Date(a.t).toLocaleString()}</div><p style="margin:8px 0">${a.content}</p><div style="text-align:right"><button class=\"ghost\" data-i=${i}>Xóa</button></div>`; el.appendChild(div) })
-      el.querySelectorAll('button[data-i]').forEach(b=>b.onclick=e=>{ state.announcements.splice(state.announcements.length-1-parseInt(e.target.dataset.i),1); save(); renderAnns() }) }
-
-    function renderStudents(){ const tbody=document.querySelector('#stuTable tbody'); tbody.innerHTML=''; state.students.forEach((s,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${s.name}</td><td>${s.roll||''}</td><td>${s.cl||''}</td><td><div class="actions"><button class="ghost" data-i=${i} data-act=edit>✏️</button><button class="ghost" data-i=${i} data-act=del>🗑</button></div></td>`; tbody.appendChild(tr) })
-      tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ const i=parseInt(e.target.dataset.i); const act=e.target.dataset.act; if(act==='del'){ if(confirm('Xóa học sinh?')){ state.students.splice(i,1); // remove grades too
-            state.grades = state.grades.filter(g=>g.studentId!==state.students[i]?.id)
-            save(); renderAll(); }
-        } else if(act==='edit'){ const name=prompt('Sửa tên', state.students[i].name); if(name!==null){ state.students[i].name=name; save(); renderStudents(); renderGradeStudentSelect(); } } }) }
-
-    function renderGradeStudentSelect(){ const sel=$('gradeStudent'); sel.innerHTML='<option value="">-- Chọn học sinh --</option>'; state.students.forEach(s=>sel.innerHTML+=`<option value="${s.id}">${s.name}</option>`) }
-
-    function renderSchedule(){ const tbody=document.querySelector('#schTable tbody'); tbody.innerHTML=''; state.schedule.forEach((s,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${s.date}</td><td>${s.time}</td><td>${s.topic}</td><td><button class=\"ghost\" data-i=${i}>Xóa</button></td>`; tbody.appendChild(tr) }); tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.schedule.splice(parseInt(e.target.dataset.i),1); save(); renderSchedule() }) }
-
-    function renderTasks(){ const tbody=document.querySelector('#taskTable tbody'); tbody.innerHTML=''; state.tasks.forEach((t,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${t.subject}</td><td>${t.title}</td><td>${t.due}</td><td><button class=\"ghost\" data-i=${i}>Xóa</button></td>`; tbody.appendChild(tr) }); tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.tasks.splice(parseInt(e.target.dataset.i),1); save(); renderTasks() }) }
-
-    function renderDocs(){ const el=$('docList'); el.innerHTML=''; if(!state.docs.length) el.innerHTML='<li class="muted">Chưa có tài liệu</li>'
-      state.docs.forEach((d,i)=>{ const li=document.createElement('li'); if(d.url){ li.innerHTML=`<strong>${d.title}</strong> — <a href="${d.url}" target="_blank">Mở link</a> <button class=\"ghost\" data-i=${i}>Xóa</button>` } else { li.innerHTML=`<strong>${d.title}</strong> — <a href='${d.data}' target='_blank' download='${d.title}'>Tải file</a> <button class=\"ghost\" data-i=${i}>Xóa</button>` } el.appendChild(li) })
-      el.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.docs.splice(parseInt(e.target.dataset.i),1); save(); renderDocs() }) }
-
-    function renderGallery(){ const el=$('gallery'); el.innerHTML=''; if(!state.gallery.length) el.innerHTML='<div class="muted">Chưa có ảnh</div>'
-      state.gallery.forEach((d,i)=>{ const img=document.createElement('img'); img.src=d; img.title='Ảnh kỷ niệm'; img.onclick=()=>window.open(d,'_blank'); el.appendChild(img) }) }
-
-    function renderGrades(){ const tbody=document.querySelector('#gradeTable tbody'); tbody.innerHTML=''; state.grades.forEach((g,i)=>{ const student = state.students.find(s=>s.id===g.studentId); const tr=document.createElement('tr'); tr.innerHTML=`<td>${student?student.name:'(không tồn tại)'}</td><td>${g.subject}</td><td>${g.score}</td><td><button class=\"ghost\" data-i=${i}>Xóa</button></td>`; tbody.appendChild(tr) })
-      tbody.querySelectorAll('button').forEach(b=>b.onclick=e=>{ state.grades.splice(parseInt(e.target.dataset.i),1); save(); renderGrades(); renderRanks() }) }
-
-    function renderRanks(){ const tbody=document.querySelector('#rankTable tbody'); tbody.innerHTML=''; if(!state.students.length){ tbody.innerHTML='<tr><td colspan=3 class="muted">Chưa có học sinh</td></tr>'; return }
-      const map = {}
-      state.students.forEach(s=>map[s.id]={name:s.name,total:0,count:0,avg:0})
-      state.grades.forEach(g=>{ if(map[g.studentId]){ map[g.studentId].total+=parseFloat(g.score); map[g.studentId].count+=1 } })
-      const arr = Object.values(map).map(m=>({name:m.name,avg: m.count? (m.total/m.count):0}))
-      arr.sort((a,b)=>b.avg-a.avg)
-      arr.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.name}</td><td>${r.avg.toFixed(2)}</td><td>${i+1}</td>`; tbody.appendChild(tr) }) }
-
-    // --- Actions ---
-    $('addAnn').onclick=()=>{ const title=$('annTitle').value.trim()||'Không có tiêu đề'; const content=$('annContent').value.trim(); state.announcements.push({title,content,t:Date.now()}); $('annTitle').value=''; $('annContent').value=''; save(); renderAnns() }
-    $('clearAnns').onclick=()=>{ if(confirm('Xóa tất cả thông báo?')){ state.announcements=[]; save(); renderAnns() } }
-
-    function newid(prefix='id'){ return prefix+Math.random().toString(36).slice(2,9) }
-
-    $('addStu').onclick=()=>{ const name=$('stuName').value.trim(); const roll=$('stuRoll').value.trim(); const cl=$('stuClass').value.trim(); if(!name){ alert('Nhập tên đi bạn'); return } const id=newid('s_'); state.students.push({id,name,roll,cl}); $('stuName').value=''; $('stuRoll').value=''; $('stuClass').value=''; save(); renderStudents(); renderGradeStudentSelect(); }
-
-    $('exportCSV').onclick=()=>{ if(!state.students.length){ alert('Chưa có học sinh'); return } const rows=[['STT','Ho Ten','So Bao Dan','Lop']]; state.students.forEach((s,i)=>rows.push([i+1,s.name,s.roll||'',s.cl||''])); const csv = rows.map(r=>r.map(c=>`"${(''+(c||'')).replace(/"/g,'""')}"`).join(',')).join('\n'); const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='danh_sach_lop.csv'; a.click(); URL.revokeObjectURL(url) }
-
-    $('addSch').onclick=()=>{ const date=$('schDate').value.trim(); const time=$('schTime').value.trim(); const topic=$('schTopic').value.trim(); if(!date||!time||!topic){ alert('Nhập đủ ngày-tiết-chủ đề'); return } state.schedule.push({date,time,topic}); $('schDate').value=''; $('schTime').value=''; $('schTopic').value=''; save(); renderSchedule() }
-
-    $('addTask').onclick=()=>{ const subject=$('taskSubject').value.trim(); const title=$('taskTitle').value.trim(); const due=$('taskDue').value.trim(); if(!subject||!title||!due){ alert('Nhập đủ thông tin'); return } state.tasks.push({subject,title,due}); $('taskSubject').value=''; $('taskTitle').value=''; $('taskDue').value=''; save(); renderTasks() }
-
-    $('addDoc').onclick=async()=>{ const title=$('docTitle').value.trim()||'Tài liệu'; const url=$('docUrl').value.trim(); const file=$('docFile').files[0]; if(!url && !file){ alert('Bỏ link hoặc chọn file để lưu'); return }
-      if(url){ state.docs.push({title,url}); } else { const data = await fileToDataUrl(file); state.docs.push({title,data}); }
-      $('docTitle').value=''; $('docUrl').value=''; $('docFile').value=''; save(); renderDocs(); }
-
-    $('addGallery').onclick=async()=>{ const files=$('galleryFile').files; if(!files.length){ alert('Chọn ảnh để upload'); return } for(const f of files){ const data=await fileToDataUrl(f); state.gallery.push(data); } $('galleryFile').value=''; save(); renderGallery(); }
-
-    async function fileToDataUrl(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(); r.readAsDataURL(file); }) }
-
-    $('addGrade').onclick=()=>{ const sid=$('gradeStudent').value; const subject=$('gradeSubject').value.trim(); const score=parseFloat($('gradeScore').value); if(!sid||!subject||isNaN(score)){ alert('Chọn học sinh, môn và nhập điểm hợp lệ'); return } state.grades.push({studentId:sid,subject,score}); $('gradeSubject').value=''; $('gradeScore').value=''; save(); renderGrades(); }
-
-    $('computeRank').onclick=()=>{ renderRanks(); alert('Đã tính xong (dựa trên điểm đã nhập)') }
-
-    // logo change
-    $('uploadLogoBtn').onclick=()=>$('logoInput').click()
-    $('logoInput').addEventListener('change', async(e)=>{ const f=e.target.files[0]; if(!f) return; const data=await fileToDataUrl(f); state.logo=data; save(); $('logoImg').src=data })
-
-    // gallery image click handled in render
-
-    // misc
-    $('printBtn').onclick=()=>window.print()
-    $('resetBtn').onclick=()=>{ if(confirm('Xóa hết dữ liệu cục bộ?')){ localStorage.removeItem(storageKey); state = JSON.parse(JSON.stringify(defaultState)); save(); renderAll(); } }
-
-    // dark mode simple
-    $('toggleDark').onclick=()=>{ document.body.style.background = document.body.style.background? '': '#071024'; document.body.style.color = document.body.style.color==='white'?'#111':'#fff' }
-
-    // save before close
-    window.addEventListener('beforeunload', save)
-
-    // init
-    renderAll()
-
-    // --- PWA hint: register a lightweight service worker if supported ---
-    if('serviceWorker' in navigator){ try{ const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>clients.claim());self.addEventListener('fetch',e=>{});`; const blob = new Blob([swCode],{type:'application/javascript'}); const url = URL.createObjectURL(blob); navigator.serviceWorker.register(url).catch(()=>{}); }catch(e){}
+    function login(){
+      let u = $("username").value.trim()
+      let p = $("password").value.trim()
+      let acc = ACCOUNTS.find(a=>a.user===u && a.pass===p)
+      if(acc){
+        localStorage.setItem("loggedIn","true")
+        localStorage.setItem("role", acc.role)
+        $("loginScreen").classList.add("fade-out")
+        setTimeout(()=>{
+          $("loginScreen").style.display="none"
+          let header=document.querySelector("header")
+          let main=document.querySelector("main")
+          let footer=document.querySelector("footer")
+          ;[header,main,footer].forEach(el=>{
+            el.style.display="block"
+            el.classList.add("fade-zoom")
+          })
+          applyRole(acc.role)
+        },500)
+      }else{
+        $("loginMsg").textContent="Sai tài khoản hoặc mật khẩu!"
+      }
     }
 
+    function applyRole(role){
+      if(role==="hs"){
+        document.querySelectorAll(".btn, .ghost").forEach(b=>{
+          if(b.id!=="logoutBtn") b.style.display="none"
+        })
+      }
+    }
+
+    function logout(){
+      localStorage.removeItem("loggedIn")
+      localStorage.removeItem("role")
+      location.reload()
+    }
+
+    window.addEventListener("load",()=>{
+      if(localStorage.getItem("loggedIn")==="true"){
+        $("loginScreen").style.display="none"
+        let role = localStorage.getItem("role")
+        applyRole(role)
+      }else{
+        document.querySelector("header").style.display="none"
+        document.querySelector("main").style.display="none"
+        document.querySelector("footer").style.display="none"
+      }
+    })
+
+    // --- Excel Upload ---
+    $('excelInput').addEventListener('change', e=>{
+      const file = e.target.files[0]
+      if(!file) return
+      const reader = new FileReader()
+      reader.onload = function(evt){
+        const data = new Uint8Array(evt.target.result)
+        const workbook = XLSX.read(data,{type:'array'})
+        const sheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[sheetName]
+        const json = XLSX.utils.sheet_to_json(worksheet,{header:1})
+        renderExcelTable(json)
+        localStorage.setItem('excelStudents', JSON.stringify(json))
+      }
+      reader.readAsArrayBuffer(file)
+    })
+
+    function renderExcelTable(data){
+      const thead = document.querySelector('#stuTable thead')
+      const tbody = document.querySelector('#stuTable tbody')
+      thead.innerHTML = ''
+      tbody.innerHTML = ''
+      data.forEach((row,i)=>{
+        const tr=document.createElement('tr')
+        row.forEach(cell=>{
+          const td=document.createElement(i===0?'th':'td')
+          td.textContent=cell
+          tr.appendChild(td)
+        })
+        if(i===0) thead.appendChild(tr); else tbody.appendChild(tr)
+      })
+    }
+
+    $('exportCSV').onclick=()=>{
+      const data = localStorage.getItem('excelStudents')
+      if(!data){ alert('Chưa có dữ liệu'); return }
+      const arr = JSON.parse(data)
+      let csv = arr.map(r=>r.join(",")).join("\n")
+      const blob = new Blob([csv],{type:'text/csv'})
+      const url = URL.createObjectURL(blob)
+      const a=document.createElement('a')
+      a.href=url; a.download='danhsach.csv'; a.click()
+    }
+
+    window.addEventListener('load',()=>{
+      const data = localStorage.getItem('excelStudents')
+      if(data) renderExcelTable(JSON.parse(data))
+    })
   </script>
 </body>
 </html>
